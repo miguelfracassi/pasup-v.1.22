@@ -1,0 +1,12 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Calendário - PasUp</title><link rel="icon" href="logo.png"><link rel="apple-touch-icon" href="logo.png"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head><body><main class="wrap"><h2 class="hi">Calendário</h2><p class="mut">Clique em um dia para criar um item nessa data, ou em um item para editar.</p>
+<div class="cn"><button class="btn" onclick="mv(-1)">Mês anterior</button><h3 id="mes"></h3><button class="btn" onclick="mv(1)">Próximo mês</button><button class="btn" onclick="cur=new Date(new Date().getFullYear(),new Date().getMonth(),1);draw()">Hoje</button></div><div class="cg" id="cal"></div></main><script src="common.js"></script><script>
+var cur=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+(async()=>{if(await shell('calendario'))load()})();
+async function load(){P=await api('plans');draw()}
+const mv=n=>{cur=new Date(cur.getFullYear(),cur.getMonth()+n,1);draw()};
+function draw(){const y=cur.getFullYear(),m=cur.getMonth(),fi=cur.getDay(),n=new Date(y,m+1,0).getDate(),hoje=new Date().toDateString(),z=v=>String(v).padStart(2,'0');
+$('mes').textContent=cur.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+let h=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d=>`<div class="dw">${d}</div>`).join('')+'<div class="dc off"></div>'.repeat(fi);
+for(let d=1;d<=n;d++){const t=new Date(y,m,d).toDateString(),L=P.filter(p=>p.data_hora&&new Date(p.data_hora).toDateString()===t);
+h+=`<div class="dc ${t===hoje?'hj':''}" onclick="form(null,'${y}-${z(m+1)}-${z(d)}T09:00')"><b>${d}</b>${L.slice(0,3).map(p=>`<span class="ch ${p.importancia} ${p.status==='concluido'?'ok':late(p)?'at':''}" onclick="event.stopPropagation();edit(${p.id})">${esc(p.titulo)}</span>`).join('')}${L.length>3?`<small>+${L.length-3} itens</small>`:''}</div>`}
+$('cal').innerHTML=h}</script></body></html>

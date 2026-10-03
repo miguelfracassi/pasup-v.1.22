@@ -1,0 +1,15 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Painel - PasUp</title><link rel="icon" href="logo.png"><link rel="apple-touch-icon" href="logo.png"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head><body><main class="wrap"><h2 class="hi" id="hi"></h2><p class="mut" id="sb"></p><div id="al"></div><div class="stats" id="st"></div>
+<div class="acts"><button class="btn pri" onclick="novo()">Novo item</button><a class="btn" href="itens?tipo=planejamento">Planejamentos</a><a class="btn" href="itens?tipo=postagem">Postagens</a><a class="btn" href="calendario">Calendário</a></div>
+<div class="two"><div class="card" id="pg"></div><div class="card" id="im"></div></div>
+<h2 class="s">Atrasados</h2><div id="at"></div><h2 class="s">Hoje</h2><div id="hj"></div><h2 class="s">Próximos 7 dias</h2><div id="sm"></div><h2 class="s">Mais adiante</h2><div id="pr"></div></main><script src="common.js"></script><script>
+(async()=>{const u=await shell('painel');if(!u)return;$('hi').textContent=`${saud()}, ${u.nome.split(' ')[0]}!`;$('sb').textContent=`${u.cargo} - ${u.paroquia} (${u.diocese})`;load()})();
+async function load(){P=await api('plans');stats(P);
+const ab=P.filter(p=>p.status!=='concluido'),pc=P.length?Math.round(100*(P.length-ab.length)/P.length):0,at=P.filter(late);
+$('al').innerHTML=at.length?`<div class="card alerta"><b>${at.length} ${at.length>1?'itens atrasados':'item atrasado'}.</b> Revise os prazos ou conclua o que já foi feito.</div>`:'';
+$('pg').innerHTML=`<h3>Progresso geral</h3><div class="pb"><i style="width:${pc}%"></i></div><p class="mut">${pc}% concluído (${P.length-ab.length} de ${P.length})</p>`;
+$('im').innerHTML='<h3>Em aberto por importância</h3>'+[['alta','Alta'],['media','Média'],['baixa','Baixa']].map(([k,l])=>{const n=ab.filter(p=>p.importancia===k).length;return `<div class="ib"><span>${l}</span><div class="pb ${k}"><i style="width:${ab.length?100*n/ab.length:0}%"></i></div><b>${n}</b></div>`}).join('');
+const f=p=>p.status!=='concluido'&&p.data_hora&&!late(p),d0=new Date();d0.setHours(23,59,59,999);const w=new Date(Date.now()+7*864e5),dt=p=>new Date(p.data_hora);
+$('at').innerHTML=at.map(card).join('')||'<p class="mut">Nenhum item atrasado. Tudo em dia.</p>';
+$('hj').innerHTML=P.filter(p=>f(p)&&dt(p)<=d0).map(card).join('')||'<p class="mut">Nada para hoje.</p>';
+$('sm').innerHTML=P.filter(p=>f(p)&&dt(p)>d0&&dt(p)<=w).map(card).join('')||'<p class="mut">Nada nos próximos 7 dias.</p>';
+$('pr').innerHTML=P.filter(p=>f(p)&&dt(p)>w).slice(0,5).map(card).join('')||'<p class="mut">Nenhum prazo mais distante.</p>'}</script></body></html>
